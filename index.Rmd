@@ -1,7 +1,7 @@
 ---
-title: "Final Paper"
+title: "Final Paper - Analysis on Global Happiness"
 author: "STOR 320 Group 5"
-date: ''
+date: 'June 24, 2021'
 output:
   html_document: default
   word_document: default
@@ -17,6 +17,7 @@ library(plotly)
 library(ggpubr)
 library(RCurl)
 library(rmarkdown)
+library(car)
 library(maps)
 library(rvest)
 library(magrittr)
@@ -45,7 +46,7 @@ The previously mentioned questions will contribute to the overall understanding 
 
 # DATA
 
-Group 5 gather the data from Kaggle. This study was conducted using a database from the World Happiness Report, which constitutes a landmark survey of the state of global happiness. The happiness scores and rankings use data from the Gallup World Poll. the Gallup World Poll is poll that continually surveys citizens in 149 different countries, representing more than 98% of the world's adult population. It contains global questions in addition to region-specific as well. The dataset used for this studies have gained global recognition as governments, organization and civil societies use it to inform their policy-making decisions. 
+Group 5 gathered the used dataset from Kaggle. This study was conducted using a database from the World Happiness Report, which constitutes a landmark survey of the state of global happiness. The happiness scores and rankings use data from the Gallup World Poll. the Gallup World Poll is poll that continually surveys citizens in 149 different countries, representing more than 98% of the world's adult population. It contains global questions in addition to region-specific as well. The dataset used for this studies have gained global recognition as governments, organization and civil societies use it to inform their policy-making decisions. 
 
 The variables from the dataset that show the more relevance to our studies are: 
 
@@ -89,10 +90,10 @@ hist(happiness2021$Ladder.score,
 Next, we will take a more visual approach to look at the happiness levels of countries around the world. The countries with data recorded in the following chart are clickable, and you can see the name of the country on the map, and the values of its Ladder Score of Happiness, Logged GDP per Capita, Social Support, Healthy Life Expectancy, Freedom to Make Life Choices,Generosity, and Perceptions of corruption when you mouse over them. 
 
 ```{r, echo=F, message=F, warning=F}
-map.world <- map_data("world") %>%
-  mutate(region = recode(region, "USA" = "United States")) %>%
-  mutate(region = recode(region, "UK" = "United Kingdom")) %>%
-  mutate(region = recode(region, "Republic of Congo" = "Congo (Brazzaville)"))
+map.world <- map_data("world")
+map.world[map.world == "USA"] <- "United States"
+map.world[map.world == "UK"] <- "United Kingdom"
+map.world[map.world == "Republic of Congo"] <- "Congo (Brazzaville)"
 map.world_joined <- left_join(map.world, represent_data, by=c("region"="Country")) %>%
   filter(!is.na(Region))
 ```
@@ -106,7 +107,8 @@ mapgraph <- ggplot() +
             "<b>Freedom: </b>", Freedom, "<br>",
             "<b>Generosity: </b>", Generosity, "<br>",
             "<b>Corruption: </b>", Corruption, "<br>")))+
-  labs(title = 'World Happiness Report2021')
+  labs(title = 'World Happiness Report2021')+
+  xlab("")+ylab("")
   
 ggplotly(mapgraph)
 ```
@@ -117,7 +119,7 @@ The shades of colors in the graph also represent the happiness index of the coun
 
 ## PART 1: How World Happiness has changed over the past years? Is it safe to assume that there is a region in the world more happy than another?
 
-In order to answer our first research question "How World Happiness has changed over the past years?" It is necessary to understand our position in the World Happiness rank as of today. In order to obtain the trend of the world average happiness level, we collected data on the happiness level in all regions of the world from 2005 to 2020 (later referred to as the previous data) and calculated the world average happiness index for each year. These data are also taken from the Gallup World Poll. Since this data includes statistics for each country for different years, we disaggregate observation by year and calculate the world average for that year. We also standardized the names of the variables in both data sets, i.e., we removed all variables from the previous data except Ladder Score of Happiness, Logged GDP per Capita, Social Support, Healthy Life Expectancy, Freedom to Make Life Choices, Generosity, and Perceptions of corruption. Eventually adding the latest global data for 2021, we get a line graph of the change in average world happiness from 2005-2021.
+In order to answer our first research question "How World Happiness has changed over the past years?" It is necessary to understand our position in the World Happiness rank as of today. In order to obtain the trend of the world average happiness level, we collected data on the happiness level in all regions of the world from 2005 to 2020 (later referred to as `previous data`) and calculated the world average happiness index for each year. These data are also taken from the Gallup World Poll. Since this data includes statistics for each country for different years, we disaggregate observation by year and calculate the world average for that year. We also standardized the names of the variables in both data sets, i.e., we removed all variables from the previous data except Ladder Score of Happiness, Logged GDP per Capita, Social Support, Healthy Life Expectancy, Freedom to Make Life Choices, Generosity, and Perceptions of corruption. Eventually adding the latest global data for 2021, we get a line graph of the change in average world happiness from 2005-2021.
 
 ```{r include= T, echo=F, message=F}
 yearly_avergae <- happiness_previous %>%
@@ -236,11 +238,11 @@ ggboxplot(regions, x = "region", y = "score",
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+theme(legend.position="none")
 ```
 
-In the case of the `Top 5 Happiest Countries`, for most of the countries, there has just been an oscillation thought the years; Although the exact ranking fluctuates, the list of top 5 countries is almost constant. The countries that have been on the top5 happiness level for more times are Switzerland and Denmark. In the case of the `Bottom 5 Countries` shows more countries along the years, showing more instability in this category. We can observe some common features among the countries in the top5 and bottom5 lists above, for example, most of the top5 countries belong to the Nordic region, which is consistent with the findings in the DATA section. In order to determine if there is a region (not a country) of the world that is generally happier than another region we are going to use the most recent data corresponding the `World Happinees Report 2021`. All countries in the world are divided into ten regions, represented by the variable `Regional indicator`. Using ANOVA, we are going to determine if the differences among the different regions are statistically significant or not.The p value for the ANOVA is p = 2.2e-2, which leads us to reject that all regions in the world might have same level of happiness. Based on the previous visualization we can say that Western Europe seems to differ with almost all the other regions except North America and ANZ. The same results are showing in correspondence with the  regions with less recorded happiness (Sub-Saharan Africa and South Asia) A pair-wise test would confirm these predictions. 
+In the case of the `Top 5 Happiest Countries`, for most of the countries, there has just been an oscillation thought the years; Although the exact ranking fluctuates, the list of top 5 countries is almost constant. The countries that have been on the top5 happiness level for more times are Switzerland and Denmark. In the case of the `Bottom 5 Countries` shows more countries along the years, showing more instability in this category. We can observe some common features among the countries in the `top5` and `bottom5` lists above, for example, most of the `top5` countries belong to the Nordic region, which is consistent with the findings in the DATA section. In order to determine if there is a region (not a country) of the world that is generally happier than another region we are going to use the most recent data corresponding the `World Happinees Report 2021`. All countries in the world are divided into ten regions, represented by the variable `Regional indicator`. Using ANOVA, we are going to determine if the differences among the different regions are statistically significant or not.The p value for the ANOVA is p = 2.2e-2, which leads us to reject that all regions in the world might have same level of happiness. Based on the previous visualization we can say that Western Europe seems to differ with almost all the other regions except North America and ANZ. The same results are showing in correspondence with the  regions with less recorded happiness (Sub-Saharan Africa and South Asia) A pair-wise test would confirm these predictions. 
 
 ## PART 2: What are the most influential factors in determining a country’s happiness? How unequal is the happiness distribution?
 
-In the study of question 2, since we are exploring the relationship between variables, we only selected the data for one year in 2021, and by comparing the variables 'Score', 'GDP', 'Social_Support', 'Health', 'Freedom', 'Generosity', and 'Corruption' with the happiness index before correlation, we can find that the absolute values of the correlation could be ranked as GDP(0.790), Health(0.768), Social Support(0.757), Freedom(0.608), Corruption(-0.421), and Generosity(-0.018) in descending order. Since the value for GDP, Health, and Social Support are close, therefore, it can be concluded that the social factors that has the greatest impact on the happiness index are GDP, Health, and Social Support. The generosity has almost no influence to the happniess.
+In the study of question 2, since we are exploring the relationship between variables, we only selected the data for one year in 2021, and by comparing the variables 'Score', 'GDP', 'Social_Support', 'Health', 'Freedom', 'Generosity', and 'Corruption' with the happiness index before correlation, we can find that the absolute values of the correlation could be ranked as GDP(0.790), Health(0.768), Social Support(0.757), Freedom(0.608), Corruption(-0.421), and Generosity(-0.018) in descending order. Since the value for GDP, Health, and Social Support are close, therefore, it can be concluded that the social factors that has the greatest impact on the happiness index are GDP, Health, and Social Support. The generosity has almost no influence on the happiness.
 
 ```{r, include=T, echo=F, message=F, warning=F}
 vars = c('Score','GDP','Social_Support','Health','Freedom','Generosity','Corruption')
@@ -253,8 +255,14 @@ corrplot(res, order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
 
+Using a multiple regression model we were able to determine the best fit model for the `Ladder score` based on the other recorded variables. 
 
-After making the distribution of the top5 countries of happiness index according to the year, we can see that the proportion of countries in Western Europe region increases year by year. From 2005-2014, the distribution of happiness was dominated by the Western European region and North America region, and from 2015, all the top5 countries belong to Western Europe region, which proves that the distribution of happiness is uneven. 
+```{r echo=F}
+model1 <- lm(Score ~ Freedom + GDP + Social_Support + Health + Generosity + Corruption, data = represent_data)
+avPlots(model1, main=paste(""))
+```
+
+After making the distribution of the `top5` countries of happiness index according to the year, we can see that the proportion of countries in Western Europe region increases year by year. From 2005-2014, the distribution of happiness was dominated by the Western European region and North America region, and from 2015, all the `top5` countries belong to Western Europe region, which proves that the distribution of happiness is uneven. 
 
 ```{r, echo=F}
 country_region <- represent_data %>%
@@ -274,8 +282,6 @@ plot_data <- ggplot(data=output_data_joined, aes(fill=Region, y=n/6*100, x=year)
 
 plot_data
 ```
-
-
 
 # CONCLUSION
 
