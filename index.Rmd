@@ -1,6 +1,6 @@
 ---
 title: "Final Paper - Analysis on Global Happiness"
-author: "STOR 320 Group 5"
+author: "Guillermo Saez Santana"
 date: 'June 24, 2021'
 output:
   html_document: default
